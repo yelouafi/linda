@@ -1,4 +1,13 @@
 
+function removeAt(arr, idx) {
+  if(idx >= 0 && idx < arr.length)
+    arr.splice(idx, 1)
+}
+
+function remove(arr, elm) {
+  removeAt(arr, arr.indexOf(elm))
+}
+
 export function matchField(field, test) {
   if(test === undefined)
     return false
@@ -25,16 +34,24 @@ export default class TupleSpace {
   constructor() {
     this.tuples = []
     this.takers = []
+    this.readers = []
   }
 
   takeTuple(pattern, resolve) {
     const tuple = this.getTuple(pattern)
     if(tuple) {
-      const idx = this.tuples.indexOf(tuple)
-      this.tuples.splice(idx, 1)
+      remove(this.tuples, tuple)
       resolve(null, tuple)
     } else
       this.takers.push([pattern, resolve])
+  }
+
+  readTuple(pattern, resolve) {
+    const tuple = this.getTuple(pattern)
+    if(tuple) {
+      resolve(null, tuple)
+    } else
+      this.readers.push([pattern, resolve])
   }
 
   getTuple(pattern) {
@@ -45,32 +62,24 @@ export default class TupleSpace {
     }
   }
 
-  checkTakersForTuple(tuple, idx) {
-    for (var i = 0; i < this.takers.length; i++) {
-      const [pattern, resolve] = this.takers[i]
+  checkPendingQueue(queue, tuple, isTaker) {
+    const _queue = queue.slice()
+    for (var i = 0; i < _queue.length; i++) {
+      const [pattern, resolve] = _queue[i]
       if(matchTuple(tuple, pattern)) {
-        this.takers.splice(i, 1)
-        if(idx !== undefined)
-          this.tuples.splice(idx, 1)
+        removeAt(queue, i)
         resolve(null, tuple)
-        return true
+        if(isTaker)
+          return true
       }
     }
     return false
   }
 
   putTuple(tuple) {
-    //console.log('put', tuple, this.tuples)
-    if(!this.checkTakersForTuple(tuple))
+    this.checkPendingQueue(this.readers, tuple)
+    if(!this.checkPendingQueue(this.takers, tuple, true)) {
       this.tuples.push(tuple)
-  }
-
-  updateTuple(tuple, newTuple) {
-    const idx = this.tuples.indexOf(tuple)
-    if(idx >= 0) {
-      if(!this.checkTakersForTuple(newTuple, idx)) {
-        this.tuples[idx] = newTuple
-      }
     }
   }
 }

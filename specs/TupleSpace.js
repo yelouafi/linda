@@ -99,9 +99,6 @@ test('TupleSpace test', (t) => {
   )
 
   const t3 = ['t3', 3, true]
-  const t4_proc = ['t4', () => {}]
-  const t4_value = ['t4', 4]
-  space.putTuple(t4_proc)
 
   space.takeTuple(['t3', isNumber, isBoolean], (err, res) => {
     //console.log(err, res)
@@ -113,30 +110,15 @@ test('TupleSpace test', (t) => {
 
     t.deepEqual(
       space.tuples,
-      [t2, t4_proc],
+      [t2],
       'TupleSpace.takeTuple should remove the matching tuple'
     )
 
   })
 
-  space.takeTuple(['t4', isNumber], (err, res) => {
-    console.log(err, res)
-    t.equal(
-      res,
-      t4_value,
-      'TupleSpace.updateTuple should resolve with the matching tuple upon an update'
-    )
-
-    t.deepEqual(
-      space.tuples,
-      [t2],
-      'TupleSpace.updateTuple should remove the matchig tuple upon an update'
-    )
-
-  })
 
   Promise.resolve(1)
     .then(() => space.putTuple(t3))
-    .then(() => space.updateTuple(t4_proc, t4_value))
-    .then(() => t.end())
+    .then(t.end)
+    .catch(t.fail)
 })

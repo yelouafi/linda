@@ -5,7 +5,9 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "babel-node ./specs/index.js | tap-spec",
-    "start": "babel-node ./src/main.js"
+    "hello": "babel-node ./examples/hello.js",
+    "procs": "babel-node ./examples/procs.js",
+    "pingpong": "babel-node ./examples/pingpong.js"
   },
   "repository": {
     "type": "git",
